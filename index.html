@@ -482,12 +482,740 @@
         transition-duration: 0.01ms !important;
       }
     }
+    /* ===== Motion Layer: scroll reveals, chapter curtain, panel transitions ===== */
+    .tp-reveal {
+      opacity: 0;
+      translate: 0 38px;
+      filter: blur(8px);
+      transition:
+        opacity 820ms cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0ms),
+        translate 920ms cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0ms),
+        filter 820ms cubic-bezier(0.16, 1, 0.3, 1) var(--rv-delay, 0ms);
+      will-change: opacity, translate, filter;
+    }
+    .tp-reveal.rv-left { translate: -44px 0; }
+    .tp-reveal.rv-right { translate: 44px 0; }
+    .tp-reveal.is-in { opacity: 1; translate: 0 0; filter: blur(0); }
+
+    .hero-intro {
+      animation: heroIntro 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation-delay: var(--hi-delay, 0ms);
+    }
+    @keyframes heroIntro {
+      from { opacity: 0; translate: 0 30px; filter: blur(10px); letter-spacing: 0.08em; }
+      to { opacity: 1; translate: 0 0; filter: blur(0); }
+    }
+
+    #chapterCurtain {
+      position: fixed; inset: 0; z-index: 60; pointer-events: none;
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px;
+      background: linear-gradient(180deg, #070304 0%, #160406 55%, #070304 100%);
+      clip-path: inset(0 0 100% 0);
+    }
+    #chapterCurtain::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+      background: linear-gradient(90deg, transparent, #D4B47C, transparent);
+      transform: scaleX(0); transform-origin: center;
+    }
+    #chapterCurtain .cc-roman { font-family: var(--tp-font-display); font-size: clamp(3rem, 9vw, 6rem); color: #D4B47C; line-height: 1; opacity: 0; }
+    #chapterCurtain .cc-label { font-size: 13px; letter-spacing: 0.28em; color: #C5B9AA; opacity: 0; }
+    #chapterCurtain.is-running { animation: curtainWipe 1000ms cubic-bezier(0.76, 0, 0.24, 1) both; }
+    #chapterCurtain.is-running::after { animation: curtainLine 1000ms ease both; }
+    #chapterCurtain.is-running .cc-roman { animation: curtainText 1000ms ease both; }
+    #chapterCurtain.is-running .cc-label { animation: curtainText 1000ms ease 60ms both; }
+    @keyframes curtainWipe {
+      0% { clip-path: inset(0 0 100% 0); }
+      38% { clip-path: inset(0 0 0 0); }
+      62% { clip-path: inset(0 0 0 0); }
+      100% { clip-path: inset(100% 0 0 0); }
+    }
+    @keyframes curtainLine {
+      0%, 20% { transform: scaleX(0); opacity: 1; }
+      50% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+    @keyframes curtainText {
+      0%, 25% { opacity: 0; translate: 0 16px; }
+      45%, 60% { opacity: 1; translate: 0 0; }
+      85%, 100% { opacity: 0; translate: 0 -12px; }
+    }
+
+    .panel-enter { animation: panelEnter 720ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes panelEnter {
+      from { opacity: 0; translate: 0 26px; filter: blur(10px); }
+      to { opacity: 1; translate: 0 0; filter: blur(0); }
+    }
+
+    .chapter-section.chapter-live .chapter-sweep { animation: sweepLine 1400ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .chapter-sweep {
+      position: absolute; left: 0; top: 0; height: 1px; width: 100%; pointer-events: none; z-index: 5;
+      background: linear-gradient(90deg, transparent, #D4B47C, transparent);
+      transform: scaleX(0); transform-origin: left; opacity: 0;
+    }
+    @keyframes sweepLine {
+      0% { transform: scaleX(0); opacity: 0.9; }
+      70% { transform: scaleX(1); opacity: 0.9; }
+      100% { transform: scaleX(1); opacity: 0; }
+    }
+
+    #chapterProgressBar { transition: width 900ms cubic-bezier(0.22, 1, 0.36, 1) !important; box-shadow: 0 0 12px rgba(212, 180, 124, 0.7); }
+    #phaseButtonsWrap button { transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease; }
+    #phaseButtonsWrap button:hover { transform: translateX(-4px); }
+    #hudChapterText.hud-swap { animation: hudSwap 520ms cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes hudSwap { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tp-reveal { opacity: 1 !important; translate: 0 0 !important; filter: none !important; transition: none !important; }
+      .hero-intro, .panel-enter, #chapterCurtain.is-running, #chapterCurtain.is-running *, .chapter-sweep { animation: none !important; }
+      #chapterCurtain { display: none; }
+    }
+
+    /* ===== Interactive Micro-FX Layer ===== */
+    /* --- Buttons & Clicks --- */
+/* ===== Button & Click Micro-Interactions (TENPHASE - VILLAIN) ===== */
+.btn-couture-primary,
+.btn-couture-hairline,
+.btn-couture-glass,
+.mood-btn,
+.hotspot-tab,
+#tabBtnMv,
+#tabBtnDs,
+#snapModeToggleBtn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-couture-primary {
+  transition: filter 180ms ease, border-color 180ms ease, background-color 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1), scale 110ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-couture-hairline {
+  transition: background-color 180ms ease, border-color 180ms ease, scale 110ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-couture-glass {
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1), scale 110ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mood-btn,
+.hotspot-tab,
+#tabBtnMv,
+#tabBtnDs,
+#snapModeToggleBtn {
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, scale 110ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 1. Diagonal gilded light sheen sweep on hover */
+.btn-couture-primary::after,
+.btn-couture-hairline::after,
+.btn-couture-glass::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  left: -135%;
+  width: 65%;
+  height: 180%;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(115deg, transparent 0%, rgba(212, 180, 124, 0.04) 32%, rgba(212, 180, 124, 0.34) 50%, rgba(240, 232, 222, 0.28) 54%, rgba(212, 180, 124, 0.04) 68%, transparent 100%);
+  transform: skewX(-22deg);
+  opacity: 0;
+  transition: left 0ms linear 200ms, opacity 180ms ease;
+}
+
+.btn-couture-primary:hover:not(:disabled)::after,
+.btn-couture-hairline:hover:not(:disabled)::after,
+.btn-couture-glass:hover:not(:disabled)::after,
+.btn-couture-primary:focus-visible:not(:disabled)::after,
+.btn-couture-hairline:focus-visible:not(:disabled)::after,
+.btn-couture-glass:focus-visible:not(:disabled)::after {
+  left: 145%;
+  opacity: 1;
+  transition: left 600ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms ease;
+}
+
+/* 2. Crisp tactile press scale without breaking existing transforms */
+.btn-couture-primary:active:not(:disabled),
+.btn-couture-hairline:active:not(:disabled),
+.btn-couture-glass:active:not(:disabled),
+.mood-btn:active:not(:disabled),
+.hotspot-tab:active:not(:disabled),
+#tabBtnMv:active:not(:disabled),
+#tabBtnDs:active:not(:disabled),
+#snapModeToggleBtn:active:not(:disabled) {
+  scale: 0.96;
+}
+
+/* 4. Subtle magnetic hover pull (desktop pointer only) */
+@media (hover: hover) and (pointer: fine) {
+  .btn-couture-primary,
+  .btn-couture-glass {
+    --mag-x: 0px;
+    --mag-y: 0px;
+    transform: translate3d(var(--mag-x, 0px), var(--mag-y, 0px), 0);
+  }
+}
+
+/* 3. Pointer-origin gilded click ripple */
+.tp-btn-ripple {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle, rgba(240, 232, 222, 0.55) 0%, rgba(212, 180, 124, 0.42) 32%, rgba(169, 12, 18, 0.18) 62%, transparent 74%);
+  transform: scale(0.08);
+  opacity: 0.92;
+  animation: tpBtnRipple 540ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tpBtnRipple {
+  0% {
+    transform: scale(0.08);
+    opacity: 0.92;
+  }
+  70% {
+    opacity: 0.42;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* 5. 4-ember gold diamond click spark burst */
+.tp-spark-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70;
+  overflow: hidden;
+}
+
+.tp-spark-ember {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  pointer-events: none;
+  background: linear-gradient(135deg, #F0E8DE 0%, #D4B47C 55%, #A90C12 100%);
+  box-shadow: 0 0 8px rgba(212, 180, 124, 0.75);
+  transform: translate3d(0, 0, 0) rotate(45deg) scale(1);
+  animation: tpSparkBurst 480ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tpSparkBurst {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(45deg) scale(1.05);
+  }
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--spark-x, 0px), var(--spark-y, 0px), 0) rotate(135deg) scale(0.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-couture-primary,
+  .btn-couture-hairline,
+  .btn-couture-glass,
+  .mood-btn,
+  .hotspot-tab,
+  #tabBtnMv,
+  #tabBtnDs,
+  #snapModeToggleBtn {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+    scale: none !important;
+  }
+  .btn-couture-primary::after,
+  .btn-couture-hairline::after,
+  .btn-couture-glass::after,
+  .tp-btn-ripple,
+  .tp-spark-overlay,
+  .tp-spark-ember {
+    display: none !important;
+    animation: none !important;
+  }
+}
+
+    /* --- Modals, Mood & Toast --- */
+/* TENPHASE VILLAIN - Overlays, Mood Transitions & Toast Micro-Interactions */
+.mood-btn {
+  position: relative;
+  overflow: hidden;
+  transition: border-color 240ms ease, color 240ms ease, box-shadow 280ms ease, background-color 240ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mood-btn:hover {
+  box-shadow: 0 0 12px rgba(212, 180, 124, 0.2);
+}
+.mood-btn[aria-pressed="true"] {
+  box-shadow: 0 0 14px rgba(212, 180, 124, 0.24), inset 0 0 10px rgba(212, 180, 124, 0.08);
+}
+.mood-btn:active {
+  transform: scale(0.97);
+}
+
+.tp-mood-wash {
+  position: fixed;
+  pointer-events: none;
+  z-index: 55;
+  border-radius: 9999px;
+  will-change: transform, opacity;
+  animation: tpMoodWash 680ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tp-mood-wash--sovereign {
+  background: radial-gradient(circle, rgba(169, 12, 18, 0.42) 0%, rgba(110, 4, 8, 0.28) 38%, rgba(212, 180, 124, 0.26) 66%, rgba(212, 180, 124, 0) 76%);
+}
+.tp-mood-wash--gilded {
+  background: radial-gradient(circle, rgba(212, 180, 124, 0.42) 0%, rgba(212, 180, 124, 0.22) 42%, rgba(169, 12, 18, 0.2) 66%, rgba(212, 180, 124, 0) 76%);
+}
+.tp-mood-wash--ivory {
+  background: radial-gradient(circle, rgba(240, 232, 222, 0.48) 0%, rgba(212, 180, 124, 0.3) 42%, rgba(110, 4, 8, 0.18) 66%, rgba(240, 232, 222, 0) 76%);
+}
+@keyframes tpMoodWash {
+  0% {
+    transform: translate3d(-50%, -50%, 0) scale(0.02);
+    opacity: 0.92;
+  }
+  38% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Modal Entrance Choreography */
+#cinemaModal.tp-modal-enter,
+#quoteCardModal.tp-modal-enter,
+#coverInspectModal.tp-modal-enter {
+  animation: tpModalBackdropIn 300ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+#cinemaModal.tp-modal-enter > div:first-child,
+#quoteCardModal.tp-modal-enter > div:first-child,
+#coverInspectModal.tp-modal-enter > div:not(#coverModalAura) {
+  animation: tpModalCardIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes tpModalBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes tpModalCardIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.96);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Toast Spring Slide-In & Gold Countdown Bar */
+#tpToast {
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(7, 3, 4, 0.72), 0 0 18px rgba(212, 180, 124, 0.16);
+  transition: opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 260ms ease;
+}
+#tpToast.tp-toast-active {
+  animation: tpToastSpringIn 440ms cubic-bezier(0.18, 1.28, 0.36, 1) both;
+}
+#tpToast.tp-toast-exit {
+  transform: translate3d(0, 10px, 0) scale(0.97);
+}
+#tpToast::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #A90C12 0%, #D4B47C 45%, #F0E8DE 75%, #D4B47C 100%);
+  box-shadow: 0 0 8px rgba(212, 180, 124, 0.65);
+  transform-origin: left center;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+#tpToast.tp-toast-active::after {
+  animation: tpToastBar 2400ms linear forwards;
+}
+@keyframes tpToastSpringIn {
+  0% {
+    transform: translate3d(0, 18px, 0) scale(0.95);
+  }
+  65% {
+    transform: translate3d(0, -3px, 0) scale(1.015);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes tpToastBar {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* Header Tab Active Sheen & Glow */
+#tabBtnMv,
+#tabBtnDs {
+  position: relative;
+  overflow: hidden;
+  transition: background-color 280ms cubic-bezier(0.22, 1, 0.36, 1), color 240ms ease, box-shadow 320ms ease;
+}
+#tabBtnMv::before,
+#tabBtnDs::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 22%, rgba(240, 232, 222, 0.22) 46%, rgba(212, 180, 124, 0.36) 52%, transparent 76%);
+  transform: translateX(-125%);
+  opacity: 0;
+}
+#tabBtnMv::after,
+#tabBtnDs::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #D4B47C, transparent);
+  transform: scaleX(0);
+  opacity: 0;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1), opacity 240ms ease;
+}
+#tabBtnMv[aria-selected="true"],
+#tabBtnDs[aria-selected="true"] {
+  box-shadow: inset 0 1px 0 rgba(240, 232, 222, 0.26), 0 0 16px rgba(212, 180, 124, 0.22), 0 0 10px rgba(169, 12, 18, 0.2);
+}
+#tabBtnMv[aria-selected="true"]::before,
+#tabBtnDs[aria-selected="true"]::before {
+  animation: tpTabSheen 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+#tabBtnMv[aria-selected="true"]::after,
+#tabBtnDs[aria-selected="true"]::after {
+  transform: scaleX(1);
+  opacity: 0.95;
+}
+#tabBtnMv[aria-selected="false"]:hover,
+#tabBtnDs[aria-selected="false"]:hover {
+  box-shadow: inset 0 0 14px rgba(212, 180, 124, 0.1);
+}
+@keyframes tpTabSheen {
+  0% {
+    transform: translateX(-125%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(125%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood-btn,
+  #tpToast,
+  #tabBtnMv,
+  #tabBtnDs,
+  #tabBtnMv::after,
+  #tabBtnDs::after {
+    transition-duration: 0.01ms !important;
+  }
+  .mood-btn:active {
+    transform: none !important;
+  }
+  .tp-mood-wash {
+    display: none !important;
+    animation: none !important;
+  }
+  #cinemaModal.tp-modal-enter,
+  #quoteCardModal.tp-modal-enter,
+  #coverInspectModal.tp-modal-enter,
+  #cinemaModal.tp-modal-enter > div:first-child,
+  #quoteCardModal.tp-modal-enter > div:first-child,
+  #coverInspectModal.tp-modal-enter > div:not(#coverModalAura),
+  #tpToast.tp-toast-active,
+  #tabBtnMv[aria-selected="true"]::before,
+  #tabBtnDs[aria-selected="true"]::before {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+  #tpToast.tp-toast-exit {
+    transform: none !important;
+  }
+  #tpToast.tp-toast-active::after {
+    animation: none !important;
+    transform: scaleX(1) !important;
+  }
+}
+
+    /* --- Forge, Altar & Vinyl --- */
+/* TENPHASE - VILLAIN: Stage & Interactive Controls Micro-Interactions */
+.forge-pad {
+  position: relative;
+  overflow: hidden;
+  transition: transform 110ms cubic-bezier(0.22, 1, 0.36, 1), border-color 160ms ease, background-color 160ms ease, box-shadow 220ms ease;
+}
+.forge-pad:hover:not(:disabled) {
+  border-color: rgba(212, 180, 124, 0.72);
+  box-shadow: 0 0 14px rgba(169, 12, 18, 0.28), inset 0 0 12px rgba(212, 180, 124, 0.08);
+}
+.forge-pad.tp-pad-recoil {
+  border-color: #D4B47C !important;
+  background-color: rgba(169, 12, 18, 0.38);
+  box-shadow: 0 0 22px rgba(169, 12, 18, 0.68), 0 0 10px rgba(212, 180, 124, 0.55), inset 0 0 16px rgba(212, 180, 124, 0.24);
+  animation: tpPadRecoil 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.tp-pad-shock {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  pointer-events: none;
+  border: 1.5px solid #D4B47C;
+  box-shadow: 0 0 14px rgba(169, 12, 18, 0.85), inset 0 0 10px rgba(212, 180, 124, 0.55);
+  background: radial-gradient(circle, rgba(212, 180, 124, 0.28) 0%, rgba(169, 12, 18, 0.24) 48%, transparent 74%);
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: tpPadShockwave 540ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 2;
+}
+@keyframes tpPadRecoil {
+  0% { transform: scale(0.955); }
+  45% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+@keyframes tpPadShockwave {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.95; }
+  55% { opacity: 0.72; }
+  100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+}
+
+/* Hotspot Pin Inner Pulse & Dual Concentric Rings (never overrides .hotspot-pin transform) */
+.hotspot-pin > span:last-child {
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease;
+}
+.hotspot-pin:hover > span:last-child {
+  transform: scale(1.24);
+  box-shadow: 0 0 12px rgba(212, 180, 124, 0.85);
+}
+.hotspot-pin.tp-pin-triggered > span:last-child {
+  transform: scale(1.38);
+  box-shadow: 0 0 16px rgba(240, 232, 222, 0.95), 0 0 24px rgba(212, 180, 124, 0.8);
+}
+.tp-hotspot-pulse-outer,
+.tp-hotspot-pulse-inner {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.3);
+}
+.tp-hotspot-pulse-outer {
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid #D4B47C;
+  box-shadow: 0 0 14px rgba(212, 180, 124, 0.6), 0 0 22px rgba(169, 12, 18, 0.45);
+  animation: tpHotspotRingOuter 780ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.tp-hotspot-pulse-inner {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #F0E8DE;
+  box-shadow: 0 0 10px rgba(212, 180, 124, 0.75);
+  opacity: 0;
+  animation: tpHotspotRingInner 680ms cubic-bezier(0.16, 1, 0.3, 1) 110ms forwards;
+}
+@keyframes tpHotspotRingOuter {
+  0% { transform: translate(-50%, -50%) scale(0.35); opacity: 0.96; }
+  100% { transform: translate(-50%, -50%) scale(3.45); opacity: 0; }
+}
+@keyframes tpHotspotRingInner {
+  0% { transform: translate(-50%, -50%) scale(0.25); opacity: 0.92; }
+  100% { transform: translate(-50%, -50%) scale(2.55); opacity: 0; }
+}
+.hotspot-tab {
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+.hotspot-tab:hover {
+  border-color: rgba(212, 180, 124, 0.68) !important;
+  box-shadow: 0 0 12px rgba(212, 180, 124, 0.16);
+}
+
+/* Lore Panel Re-entry Animation */
+.tp-lore-enter {
+  animation: tpLoreFadeSlide 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+#loreSubtitle.tp-lore-enter { animation-delay: 0ms; }
+#loreTitle.tp-lore-enter { animation-delay: 45ms; }
+#loreBody.tp-lore-enter { animation-delay: 90ms; }
+#loreVerse.tp-lore-enter { animation-delay: 135ms; }
+@keyframes tpLoreFadeSlide {
+  0% { opacity: 0; transform: translateY(10px); filter: blur(1.5px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* Crate Card Subtle Lift & Gilded Border Glint */
+.crate-card {
+  box-shadow: 0 0 0 rgba(212, 180, 124, 0);
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms ease, background-color 220ms ease, box-shadow 240ms ease;
+}
+.crate-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 22%, rgba(240, 232, 222, 0.12) 44%, rgba(212, 180, 124, 0.44) 50%, rgba(169, 12, 18, 0.22) 56%, transparent 78%);
+  transform: translateX(-135%);
+  opacity: 0;
+  z-index: 4;
+}
+.crate-card:hover {
+  transform: translateY(-12px);
+  border-color: rgba(212, 180, 124, 0.82) !important;
+  box-shadow: 0 12px 24px -10px rgba(7, 3, 4, 0.92), 0 0 18px rgba(212, 180, 124, 0.28), inset 0 0 0 1px rgba(212, 180, 124, 0.32);
+}
+.crate-card.is-active {
+  box-shadow: 0 10px 22px -8px rgba(7, 3, 4, 0.94), 0 0 18px rgba(212, 180, 124, 0.32), inset 0 0 0 1px rgba(212, 180, 124, 0.42);
+}
+.crate-card:hover::after,
+.crate-card.tp-crate-clicked::after {
+  animation: tpGildedGlint 620ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.crate-card.tp-crate-clicked {
+  box-shadow: 0 14px 26px -8px rgba(7, 3, 4, 0.95), 0 0 24px rgba(212, 180, 124, 0.52), 0 0 14px rgba(169, 12, 18, 0.48), inset 0 0 0 1px rgba(240, 232, 222, 0.45);
+}
+@keyframes tpGildedGlint {
+  0% { transform: translateX(-135%); opacity: 0.9; }
+  100% { transform: translateX(135%); opacity: 0; }
+}
+
+/* Forge Lyrics List Item Lift & Gilded Glint */
+#forgeLyricsList button {
+  position: relative;
+  overflow: hidden;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 200ms ease;
+}
+#forgeLyricsList button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(110deg, transparent 20%, rgba(212, 180, 124, 0.34) 49%, rgba(169, 12, 18, 0.2) 55%, transparent 80%);
+  transform: translateX(-130%);
+  opacity: 0;
+}
+#forgeLyricsList button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(212, 180, 124, 0.68) !important;
+  box-shadow: 0 4px 12px -4px rgba(7, 3, 4, 0.8), 0 0 10px rgba(212, 180, 124, 0.16);
+}
+#forgeLyricsList button.tp-lyric-glint {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -4px rgba(7, 3, 4, 0.88), 0 0 16px rgba(212, 180, 124, 0.34), inset 0 0 12px rgba(169, 12, 18, 0.2);
+}
+#forgeLyricsList button.tp-lyric-glint::after {
+  animation: tpGildedGlint 580ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Prev / Next Vinyl Navigation Micro-Pulse */
+#prevVinylBtn,
+#nextVinylBtn {
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, box-shadow 200ms ease, color 180ms ease;
+}
+#prevVinylBtn:hover:not(:disabled) {
+  transform: translateX(-2px);
+  border-color: #D4B47C;
+  box-shadow: 0 0 12px rgba(212, 180, 124, 0.24);
+}
+#nextVinylBtn:hover:not(:disabled) {
+  transform: translateX(2px);
+  border-color: #D4B47C;
+  box-shadow: 0 0 12px rgba(212, 180, 124, 0.24);
+}
+#prevVinylBtn.tp-vinyl-nav-hit,
+#nextVinylBtn.tp-vinyl-nav-hit {
+  border-color: #D4B47C;
+  box-shadow: 0 0 16px rgba(212, 180, 124, 0.5), inset 0 0 10px rgba(169, 12, 18, 0.38);
+}
+
+/* Active-Drag Crimson-Gold Glow State on .tp-range */
+.tp-range {
+  transition: box-shadow 180ms ease, background 180ms ease;
+}
+.tp-range::-webkit-slider-thumb {
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+.tp-range::-moz-range-thumb {
+  transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+.tp-range.is-dragging {
+  background: linear-gradient(90deg, rgba(169, 12, 18, 0.9), rgba(212, 180, 124, 0.95));
+  box-shadow: 0 0 10px rgba(169, 12, 18, 0.72), 0 0 16px rgba(212, 180, 124, 0.48);
+}
+.tp-range.is-dragging::-webkit-slider-thumb {
+  transform: scale(1.22);
+  background: #F0E8DE;
+  border-color: #A90C12;
+  box-shadow: 0 0 0 4px rgba(169, 12, 18, 0.42), 0 0 14px rgba(212, 180, 124, 0.95);
+}
+.tp-range.is-dragging::-moz-range-thumb {
+  transform: scale(1.22);
+  background: #F0E8DE;
+  border-color: #A90C12;
+  box-shadow: 0 0 0 4px rgba(169, 12, 18, 0.42), 0 0 14px rgba(212, 180, 124, 0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-pad.tp-pad-recoil,
+  .tp-pad-shock,
+  .tp-hotspot-pulse-outer,
+  .tp-hotspot-pulse-inner,
+  .tp-lore-enter,
+  .crate-card::after,
+  #forgeLyricsList button::after {
+    animation: none !important;
+  }
+  .forge-pad,
+  .hotspot-pin > span:last-child,
+  .hotspot-tab,
+  .crate-card,
+  #forgeLyricsList button,
+  #prevVinylBtn,
+  #nextVinylBtn,
+  .tp-range,
+  .tp-range::-webkit-slider-thumb,
+  .tp-range::-moz-range-thumb {
+    transition: none !important;
+  }
+  .crate-card:hover,
+  #forgeLyricsList button:hover,
+  #forgeLyricsList button.tp-lyric-glint,
+  #prevVinylBtn:hover:not(:disabled),
+  #nextVinylBtn:hover:not(:disabled),
+  .tp-range.is-dragging::-webkit-slider-thumb,
+  .tp-range.is-dragging::-moz-range-thumb {
+    transform: none !important;
+  }
+}
   </style>
 </head>
 <body class="m-0 p-0 antialiased">
   <div id="tpRoot" class="tp-stage mood-sovereign relative overflow-x-hidden">
     <!-- Top Hairline Chapter Scroll Progress Bar -->
     <div id="chapterProgressBar" class="fixed top-0 left-0 h-[2px] z-50 transition-all duration-300" style="width: 20%; background-color: #D4B47C;"></div>
+    <div id="chapterCurtain" aria-hidden="true"><div class="cc-roman"></div><div class="cc-label"></div></div>
 
     <!-- Protocol Notice Banner when opened via file:// -->
     <div
@@ -495,7 +1223,7 @@
       class="hidden border-b px-5 py-2.5 text-xs sm:text-sm text-center"
       style="border-color: var(--tp-gold); background-color: #26070B; color: #F0E8DE;"
     >
-      การเปิดไฟล์ผ่าน file:// ทำให้ YouTube ปฏิเสธการฝังวิดีโอ (Error 153) กรุณารัน <code class="font-code px-1.5 py-0.5 border border-[#D4B47C]/40">./start-demo.sh</code> แล้วเปิดผ่าน <code class="font-code px-1.5 py-0.5 border border-[#D4B47C]/40">http://localhost:4173</code> เพื่อเล่นวิดีโอพื้นหลังเต็มรูปแบบ
+      การเปิดไฟล์ผ่าน file:// ทำให้ฝังวิดีโอ YouTube ไม่ได้ (Error 153) กรุณารัน <code class="font-code px-1.5 py-0.5 border border-[#D4B47C]/40">./start-demo.sh</code> แล้วเปิดผ่าน <code class="font-code px-1.5 py-0.5 border border-[#D4B47C]/40">http://localhost:4173</code> เพื่อเล่นวิดีโอพื้นหลังได้อย่างสมบูรณ์
     </div>
 
     <!-- Persistent Luxury Cinema Masthead -->
@@ -599,7 +1327,7 @@
       style="border-color: var(--tp-border); background-color: color-mix(in srgb, var(--tp-bg) 80%, transparent); color: var(--tp-fg);"
     >
       <span id="hudChapterText" class="font-display text-sm" style="color: var(--tp-gold);">ฉาก I / V เวทีภาพยนตร์</span>
-      <span style="color: var(--tp-fg-muted);">เลื่อนลูกกลิ้งเมาส์เพื่อเปลี่ยนฉาก</span>
+      <span style="color: var(--tp-fg-muted);">เลื่อนเมาส์เพื่อเปลี่ยนฉาก</span>
     </div>
 
     <!-- =================================================================== -->
@@ -684,7 +1412,7 @@
           </p>
 
           <p class="mt-2.5 text-sm sm:text-base max-w-[60ch]" style="color: #E3D9CD; line-height: 1.78;">
-            ซิงเกิลและมิวสิกวิดีโอล่าสุดจาก TENPHASE หลอมรวมสุนทรียศาสตร์โกธิคไทยร่วมสมัยเข้ากับจังหวะแทรปมืดและงานกำกับภาพฟิล์มสีชาด
+            ซิงเกิลและมิวสิกวิดีโอล่าสุดจาก TENPHASE ที่หลอมรวมสุนทรียะโกธิคไทยร่วมสมัย เข้ากับซาวด์ดาร์กแทรปและงานกำกับภาพโทนฟิล์มสีชาด
           </p>
 
           <div class="mt-7 flex flex-wrap items-center justify-center gap-3">
@@ -723,10 +1451,10 @@
           <div class="flex flex-wrap items-end justify-between gap-4 pb-6 border-b mb-10" style="border-color: var(--tp-border);">
             <div>
               <h2 class="font-display text-2xl sm:text-4xl" style="color: var(--tp-fg);">
-                แท่นบูชา 3 มิติและสัญลักษณ์เชิงลึก
+                แท่นบูชา 3 มิติและนัยแห่งสัญลักษณ์
               </h2>
               <p class="mt-1.5 text-sm max-w-[66ch]" style="color: var(--tp-fg-muted);">
-                ขยับเมาส์เพื่อส่องไฟแหวกม่านไหมและเอียงเฟรม 3 มิติ กดจุดประกายทองบนภาพเพื่อซูมสำรวจความหมายและฟังเสียงประจำสัญลักษณ์
+                ขยับเมาส์เพื่อส่องไฟแหวกม่านไหมและเอียงเฟรม 3 มิติ คลิกจุดประกายทองบนภาพเพื่อซูมสำรวจความหมายพร้อมฟังเสียงประจำสัญลักษณ์
               </p>
             </div>
 
@@ -832,7 +1560,7 @@
                 <div id="loreSubtitle" class="font-code text-xs" style="color: var(--tp-gold);">The Blindfolded Villain</div>
                 <h3 id="loreTitle" class="font-display text-2xl sm:text-3xl mt-1" style="color: var(--tp-fg);">เนตรผ้าขาว</h3>
                 <p id="loreBody" class="mt-3 text-sm sm:text-base max-w-[54ch]" style="color: var(--tp-fg-muted); line-height: 1.78;">
-                  เมื่อดวงตาถูกปิด สิ่งที่เห็นชัดที่สุดคือความจริงที่ไม่ถูกปรุงแต่ง สะท้อนตัวตนจากท่อนร้อง I got a black heart painted in gold
+                  เมื่อดวงตาถูกปิด สิ่งที่ประจักษ์ชัดที่สุดคือความจริงอันไร้การปรุงแต่ง สะท้อนตัวตนผ่านท่อนร้อง I got a black heart painted in gold
                 </p>
                 <div id="loreVerse" class="mt-4 pt-4 border-t font-display text-base italic" style="border-color: var(--tp-border); color: var(--tp-fg);">
                   "I got a black heart painted in gold, a pretty little nightmare that never gets old."
@@ -847,7 +1575,7 @@
                     ฟิล์มสีชาด 35 มม.
                   </button>
                   <button type="button" data-lens="anamorphic" class="lens-btn px-3 py-2.5 text-xs border font-medium" style="border-color: var(--tp-border); color: var(--tp-fg-muted);">
-                    เฉือนแสง Anamorphic
+                    แสงแฟลร์ Anamorphic
                   </button>
                   <button type="button" data-lens="silver" class="lens-btn px-3 py-2.5 text-xs border font-medium" style="border-color: var(--tp-border); color: var(--tp-fg-muted);">
                     สลักเงินรมดำ
@@ -887,10 +1615,10 @@
           <div class="flex flex-wrap items-end justify-between gap-4 pb-6 border-b mb-8" style="border-color: var(--tp-border);">
             <div>
               <h2 class="font-display text-2xl sm:text-4xl" style="color: var(--tp-fg);">
-                VILLAIN Sound Forge และสตูดิโอสร้างการ์ดคำร้อง
+                VILLAIN Sound Forge และสตูดิโอสร้างการ์ดเนื้อเพลง
               </h2>
               <p class="mt-1.5 text-sm max-w-[68ch]" style="color: var(--tp-fg-muted);">
-                ทดลองผสมเลเยอร์เสียงสด 4 แชนเนล กดแป้นจังหวะสด (หรือปุ่มเลข 1 ถึง 4) และคลิกท่อนร้องเพื่อสร้างภาพแชร์ IG Story ทันที
+                ลองมิกซ์เลเยอร์เสียง 4 แชนเนล กดแป้นจังหวะสด (หรือปุ่ม 1 ถึง 4) แล้วคลิกท่อนเพลงเพื่อสร้างการ์ดแชร์ IG Story ทันที
               </p>
             </div>
 
@@ -909,7 +1637,7 @@
             <div class="lg:col-span-7 border p-5 sm:p-6 space-y-5" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <div class="text-xs" style="color: var(--tp-fg-muted);">เวทีคลื่นเสียงชฎาทองและแรงกระแทก</div>
+                  <div class="text-xs" style="color: var(--tp-fg-muted);">คลื่นเสียงชฎาทองและแรงกระแทก</div>
                   <div id="activeActTitle" class="font-display text-xl" style="color: var(--tp-fg);">Act I Black Heart Painted in Gold</div>
                 </div>
                 <span id="synthBadge" class="font-code text-xs px-3 py-1 border" style="border-color: var(--tp-border); color: var(--tp-fg-muted);">
@@ -941,7 +1669,7 @@
                   <button type="button" data-pad="3" class="forge-pad p-3 text-left">
                     <div class="font-code text-xs" style="color: var(--tp-gold);">[3]</div>
                     <div class="font-display text-base mt-0.5" style="color: var(--tp-fg);">Glitch Slash</div>
-                    <div class="text-xs" style="color: var(--tp-fg-muted);">แสงเฉือนซินธ์</div>
+                    <div class="text-xs" style="color: var(--tp-fg-muted);">ซินธ์เฉือนคม</div>
                   </button>
                   <button type="button" data-pad="4" class="forge-pad p-3 text-left">
                     <div class="font-code text-xs" style="color: var(--tp-gold);">[4]</div>
@@ -965,7 +1693,7 @@
                   class="px-5 py-2 text-xs sm:text-sm font-medium rounded-full border transition-colors"
                   style="background-color: var(--tp-accent); color: var(--tp-accent-fg); border-color: var(--tp-border-strong);"
                 >
-                  เล่นสตูดิโอเสียง
+                  เล่นเสียงสตูดิโอ
                 </button>
 
                 <span id="trackTimeLabel" class="font-code text-xs tabular-nums" style="color: var(--tp-fg);">00:00 / 02:25</span>
@@ -986,7 +1714,7 @@
               <!-- Clickable Real Lyrics List -->
               <div class="border p-5" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
                 <div class="flex items-center justify-between gap-2 pb-3 border-b mb-3" style="border-color: var(--tp-border);">
-                  <span class="text-xs" style="color: var(--tp-gold);">คลิกท่อนที่ชอบเพื่อใช้สร้างการ์ดแชร์</span>
+                  <span class="text-xs" style="color: var(--tp-gold);">คลิกท่อนที่ชอบเพื่อสร้างการ์ดแชร์</span>
                   <span id="actTimeBadge" class="font-code text-xs" style="color: var(--tp-fg-muted);">00:00</span>
                 </div>
                 <div id="forgeLyricsList" class="space-y-2"></div>
@@ -994,13 +1722,13 @@
 
               <!-- IG Story Lyric Poster Action Box -->
               <div class="border p-5 space-y-3" style="border-color: var(--tp-border-strong); background-color: var(--tp-surface);">
-                <div class="text-xs" style="color: var(--tp-gold);">ฟีเจอร์แชร์แฟนคลับ (IG Story 1080x1920)</div>
+                <div class="text-xs" style="color: var(--tp-gold);">การ์ดแชร์สำหรับแฟนคลับ (IG Story 1080x1920)</div>
                 <p id="selectedQuotePreview" class="font-display text-lg leading-snug" style="color: var(--tp-fg);">
                   "I got a black heart painted in gold"
                 </p>
                 <div class="flex flex-wrap gap-2.5 pt-1">
                   <button type="button" id="generateQuoteCardBtn" class="btn-couture-primary px-5 py-2.5 text-xs sm:text-sm font-medium">
-                    สร้างภาพคำร้อง IG Story (PNG)
+                    สร้างการ์ดเนื้อเพลง IG Story (PNG)
                   </button>
                 </div>
               </div>
@@ -1026,9 +1754,9 @@
         <div class="relative z-10 max-w-7xl w-full mx-auto space-y-10">
           <div class="pb-6 border-b flex flex-wrap items-end justify-between gap-4" style="border-color: var(--tp-border);">
             <div>
-              <h2 class="font-display text-2xl sm:text-4xl" style="color: var(--tp-fg);">คลังแผ่นเสียงและทำเนียบ TENPHASE</h2>
+              <h2 class="font-display text-2xl sm:text-4xl" style="color: var(--tp-fg);">คลังแผ่นเสียง TENPHASE</h2>
               <p class="mt-1.5 text-sm max-w-[68ch]" style="color: var(--tp-fg-muted);">
-                รวม 12 ผลงานจริงจากช่อง TΣNPHASE Topic ลากปกเพื่อสลับแผ่น คลิกแขนเข็มหรือเลือกจากชั้นแผ่นเสียงเพื่อเล่นเพลงจริงจาก YouTube ทันที
+                รวม 12 ผลงานจากช่อง TΣNPHASE Topic ลากปกเพื่อสลับแผ่น คลิกก้านเข็มหรือเลือกจากชั้นแผ่นเสียงเพื่อเล่นเพลงจริงจาก YouTube ได้ทันที
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -1119,7 +1847,7 @@
                       <!-- Hover Center Prompt -->
                       <div class="relative z-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                         <span class="text-xs px-2.5 py-1 border bg-[#070304]/85 backdrop-blur-sm" style="border-color: #D4B47C; color: #F0E8DE;">
-                          คลิกส่องปก / ลากสลับแผ่น
+                          คลิกชมปก / ลากสลับแผ่น
                         </span>
                       </div>
 
@@ -1214,7 +1942,7 @@
           <!-- Bottom 3D Collector Record Crate Strip (12 Real Official Covers) -->
           <div class="pt-4 border-t" style="border-color: var(--tp-border);">
             <div class="flex items-center justify-between text-xs mb-3">
-              <span style="color: var(--tp-gold);">ชั้นแผ่นเสียงสะสม TΣNPHASE Topic (คลิกปกใดก็ได้เพื่อวางเข็มเล่นทันที)</span>
+              <span style="color: var(--tp-gold);">ชั้นแผ่นเสียงสะสม TΣNPHASE Topic (คลิกที่ปกเพื่อวางเข็มเล่นทันที)</span>
               <span class="font-code" style="color: var(--tp-fg-muted);">12 OFFICIAL RELEASES</span>
             </div>
             <div id="recordCrateStrip" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 pt-3"></div>
@@ -1232,9 +1960,9 @@
           <!-- Interactive Fan Pre-Save / Next Drop Ritual -->
           <div class="border p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center" style="border-color: var(--tp-border-strong); background-color: var(--tp-surface);">
             <div class="lg:col-span-6">
-              <h2 class="font-display text-2xl sm:text-3xl" style="color: var(--tp-fg);">รับแจ้งเตือน MV ถัดไปจาก TENPHASE</h2>
+              <h2 class="font-display text-2xl sm:text-3xl" style="color: var(--tp-fg);">รับการแจ้งเตือน MV ใหม่จาก TENPHASE</h2>
               <p class="mt-1.5 text-sm max-w-[52ch]" style="color: var(--tp-fg-muted);">
-                ตัวอย่างระบบเก็บรายชื่อแฟนคลับก่อนปล่อยซิงเกิลใหม่ พร้อมออกบัตรผ่านดิจิทัลเฉพาะบุคคล
+                ตัวอย่างระบบลงทะเบียนแฟนคลับก่อนปล่อยซิงเกิลใหม่ พร้อมออกบัตรผ่านดิจิทัลเฉพาะคุณ
               </p>
             </div>
             <div class="lg:col-span-6">
@@ -1243,8 +1971,8 @@
                   id="presaveEmail"
                   type="email"
                   required
-                  placeholder="กรอกอีเมลของคุณ (ตัวอย่าง: fan@tenphase.com)"
-                  aria-label="อีเมลสำหรับรับแจ้งเตือน MV ถัดไป"
+                  placeholder="กรอกอีเมลของคุณ (เช่น fan@tenphase.com)"
+                  aria-label="อีเมลสำหรับรับการแจ้งเตือน MV ใหม่"
                   class="flex-1 min-w-[210px] px-4 py-2.5 text-sm border"
                   style="border-color: var(--tp-border-strong); background-color: var(--tp-bg); color: var(--tp-fg);"
                 />
@@ -1253,7 +1981,7 @@
                 </button>
               </form>
               <div id="fanPassBanner" class="hidden mt-3 p-3 border text-xs flex flex-wrap items-center justify-between gap-2" style="border-color: var(--tp-gold); background-color: var(--tp-bg); color: var(--tp-fg);">
-                <span>บัตรผ่านแฟนคลับดิจิทัลของคุณออกให้แล้ว</span>
+                <span>บัตรผ่านแฟนคลับดิจิทัลของคุณพร้อมใช้งานแล้ว</span>
                 <span id="fanPassCode" class="font-code font-medium" style="color: var(--tp-gold);">TP-PHASE-0417</span>
               </div>
             </div>
@@ -1263,7 +1991,7 @@
           <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
             <div class="md:col-span-7">
               <h2 class="font-display text-xl pb-4 border-b" style="border-color: var(--tp-border); color: var(--tp-fg);">
-                เครดิตการผลิตอย่างเป็นทางการ (VILLAIN)
+                เครดิตผลงานอย่างเป็นทางการ (VILLAIN)
               </h2>
               <dl class="divide-y text-sm" style="border-color: var(--tp-border);">
                 <div class="py-3 flex justify-between gap-4">
@@ -1338,7 +2066,7 @@
           TENPHASE Design System Specification
         </h1>
         <p class="mt-3 text-base max-w-[68ch]" style="color: var(--tp-fg-muted); line-height: 1.8;">
-          คู่มือระบบออกแบบสำหรับพรีเซนต์ลูกค้า ถ่ายทอดเอกลักษณ์ของ TENPHASE จากซิงเกิล VILLAIN ทั้งสีชาด ทองทาบใจดำ เงินรมดำชฎา แสงเฉือน Anamorphic และฟีเจอร์โต้ตอบสำหรับแฟนคลับ
+          คู่มือระบบออกแบบฉบับนำเสนอลูกค้า ถ่ายทอดอัตลักษณ์ของ TENPHASE จากซิงเกิล VILLAIN ทั้งสีชาด ทองทาบใจดำ เงินรมดำชฎา แสงเฉือน Anamorphic และลูกเล่นโต้ตอบสำหรับแฟนเพลง
         </p>
       </section>
 
@@ -1350,19 +2078,19 @@
             <div class="p-6 border-b md:border-b-0 md:border-r" style="border-color: var(--tp-border);">
               <h3 class="font-display text-lg" style="color: var(--tp-gold);">สิบพักตร์ร่วมสมัย</h3>
               <p class="mt-2.5 text-sm max-w-[44ch]" style="color: var(--tp-fg-muted);">
-                สกัดแรงบันดาลใจจากแนวคิด Ten Faces ผสมเครื่องทรงชฎาไทยโบราณเข้ากับดนตรีแทรป เมทัล และซาวด์สังเคราะห์ล้ำสมัย
+                ถอดแรงบันดาลใจจากแนวคิด Ten Faces ผสานเครื่องทรงชฎาไทยโบราณเข้ากับดนตรีแทรป เมทัล และซาวด์สังเคราะห์ล้ำสมัย
               </p>
             </div>
             <div class="p-6 border-b md:border-b-0 md:border-r" style="border-color: var(--tp-border);">
               <h3 class="font-display text-lg" style="color: var(--tp-gold);">ทองทาบใจดำ</h3>
               <p class="mt-2.5 text-sm max-w-[44ch]" style="color: var(--tp-fg-muted);">
-                ตีความจากเนื้อร้อง Black Heart Painted in Gold โดยใช้เส้นขอบทองบางเฉียบตัดกับพื้นนิลลงรักและแดงชาดอย่างสำรวม
+                ตีความจากเนื้อร้อง Black Heart Painted in Gold ใช้เส้นขอบทองบางเฉียบตัดกับพื้นนิลลงรักและแดงชาดอย่างคมขรึม
               </p>
             </div>
             <div class="p-6">
-              <h3 class="font-display text-lg" style="color: var(--tp-gold);">ภาพยนตร์ในทุกจังหวะเลื่อน</h3>
+              <h3 class="font-display text-lg" style="color: var(--tp-gold);">อารมณ์ภาพยนตร์ในทุกจังหวะเลื่อน</h3>
               <p class="mt-2.5 text-sm max-w-[44ch]" style="color: var(--tp-fg-muted);">
-                ให้วิดีโอพื้นหลัง 16:9 แสงเฉือนแนวนอน Anamorphic Smear และม่านผ้าคลุมไหมเป็นหัวใจของการสื่อสารบนหน้าเว็บ
+                ชูวิดีโอพื้นหลัง 16:9 แสงเฉือนแนวนอน Anamorphic Smear และม่านผ้าคลุมไหมเป็นหัวใจในการเล่าเรื่อง
               </p>
             </div>
           </div>
@@ -1370,7 +2098,7 @@
 
         <!-- Client Value Map Table -->
         <div>
-          <h3 class="font-display text-xl mb-4" style="color: var(--tp-fg);">คุณค่าของแต่ละฟีเจอร์สำหรับพรีเซนต์ลูกค้า (Interactive Experience Map)</h3>
+          <h3 class="font-display text-xl mb-4" style="color: var(--tp-fg);">คุณค่าของแต่ละฟีเจอร์สำหรับนำเสนอลูกค้า (Interactive Experience Map)</h3>
           <div class="overflow-x-auto border" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
             <table class="w-full text-left text-sm border-collapse">
               <thead>
@@ -1382,22 +2110,22 @@
               </thead>
               <tbody class="divide-y" style="border-color: var(--tp-border); color: var(--tp-fg-muted);">
                 <tr>
-                  <td class="p-4 font-medium" style="color: var(--tp-fg);">เวทีภาพยนตร์และลูกกลิ้งเปลี่ยนฉาก</td>
-                  <td class="p-4">เลื่อนลูกกลิ้งเมาส์สลับฉาก เปิดเสียง MV จริง ชมเต็มจอ</td>
-                  <td class="p-4">ตรึงสายตาใน 3 วินาทีแรกและยืดเวลาการรับชมบนเว็บ</td>
+                  <td class="p-4 font-medium" style="color: var(--tp-fg);">เวทีภาพยนตร์และการสโครลสลับฉาก</td>
+                  <td class="p-4">เลื่อนเมาส์สลับฉาก เปิดเสียง MV จริง และชมแบบเต็มจอ</td>
+                  <td class="p-4">ตรึงสายตาตั้งแต่ 3 วินาทีแรก และดึงผู้ชมให้อยู่บนเว็บได้นานขึ้น</td>
                 </tr>
                 <tr>
                   <td class="p-4 font-medium" style="color: var(--tp-fg);">แท่นบูชา 3 มิติและสัญลักษณ์</td>
-                  <td class="p-4">เอียงภาพ 3 มิติ ส่องไฟแหวกผ้าคลุม กดจุดสำรวจ Lore และเปลี่ยนเลนส์</td>
+                  <td class="p-4">เอียงภาพ 3 มิติ ส่องไฟแหวกม่านผ้าคลุม แตะจุดสำรวจ Lore และเปลี่ยนเลนส์</td>
                   <td class="p-4">เล่าเรื่องราวเชิงสัญลักษณ์ของ TENPHASE แทนการโชว์ภาพนิ่ง</td>
                 </tr>
                 <tr>
                   <td class="p-4 font-medium" style="color: var(--tp-fg);">VILLAIN Sound Forge และการ์ด IG Story</td>
-                  <td class="p-4">ผสม 4 แชนเนลเสียง กดแป้น 1 ถึง 4 สร้างภาพคำร้อง 1080x1920</td>
+                  <td class="p-4">มิกซ์ 4 แชนเนลเสียง กดแป้น 1–4 และสร้างการ์ดคำร้องขนาด 1080x1920</td>
                   <td class="p-4">สร้างกระแสแชร์ต่อแบบไวรัลบน Instagram และ TikTok</td>
                 </tr>
                 <tr>
-                  <td class="p-4 font-medium" style="color: var(--tp-fg);">เครื่องเล่นแผ่นเสียง 3 มิติและชั้นสะสม</td>
+                  <td class="p-4 font-medium" style="color: var(--tp-fg);">เครื่องเล่นแผ่นเสียง 3 มิติและชั้นแผ่นเสียงสะสม</td>
                   <td class="p-4">ลากปกสลับแผ่น ยก/วางเข็ม ปรับ 33⅓/45 RPM ฟังซาวด์เฉพาะเพลง และดึงแผ่นจาก Record Crate</td>
                   <td class="p-4">เปลี่ยนหน้า Catalog เดิมให้มีชีวิตและชวนสำรวจทุกผลงานในจักรวาล TENPHASE</td>
                 </tr>
@@ -1451,7 +2179,7 @@
       <section class="pb-12 border-b" style="border-color: var(--tp-border);">
         <h2 class="font-display text-2xl mb-2" style="color: var(--tp-fg);">ระบบตัวอักษรสองภาษา</h2>
         <p class="text-sm max-w-[64ch] mb-6" style="color: var(--tp-fg-muted);">
-          จับคู่ฟอนต์ Serif คมสูงสำหรับพาดหัวพิธีกรรมเข้ากับฟอนต์ไทยที่อ่านสบายตาในย่อหน้ายาวไม่เกิน 80 ตัวอักษร
+          จับคู่ฟอนต์ Serif ทรงสูงเส้นคมชัดสำหรับพาดหัวแนวพิธีกรรม เข้ากับฟอนต์ไทยที่อ่านสบายตาในระยะบรรทัดไม่เกิน 80 ตัวอักษร
         </p>
 
         <div class="divide-y border" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
@@ -1545,7 +2273,7 @@
             <div class="w-36 h-12 my-8 border rounded-full flex items-center justify-center" style="border-color: var(--tp-border-strong); background-color: var(--tp-bg);">
               <span class="font-code text-xs" style="color: var(--tp-fg-muted);">999px</span>
             </div>
-            <h3 class="font-display text-lg" style="color: var(--tp-fg);">เม็ดควบคุมเสียง</h3>
+            <h3 class="font-display text-lg" style="color: var(--tp-fg);">ทรงแคปซูลควบคุมเสียง</h3>
             <p class="mt-1 text-xs" style="color: var(--tp-fg-muted);">สงวนไว้สำหรับแถบเล่นเสียงและ Scrubber เท่านั้น</p>
           </div>
         </div>
@@ -1601,7 +2329,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="border p-6 space-y-5" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
-            <h3 class="font-display text-lg" style="color: var(--tp-fg);">ปุ่มและหน้าต่างโรงภาพยนตร์</h3>
+            <h3 class="font-display text-lg" style="color: var(--tp-fg);">ชุดปุ่มและหน้าต่างฉาย MV</h3>
             <div class="flex flex-wrap gap-3">
               <button type="button" data-toast-msg="เปิดใช้งานคำสั่งพิธีกรรมหลักแล้ว" class="btn-couture-primary px-5 py-2.5 text-sm">
                 ปุ่มพิธีกรรมหลัก
@@ -1625,7 +2353,7 @@
 
           <div class="border p-6 space-y-4" style="border-color: var(--tp-border); background-color: var(--tp-surface);">
             <div class="flex items-center justify-between gap-2">
-              <h3 class="font-display text-lg" style="color: var(--tp-fg);">บล็อกเผยคำร้องและสถานะองก์</h3>
+              <h3 class="font-display text-lg" style="color: var(--tp-fg);">การ์ดเผยคำร้องและสถานะองก์</h3>
               <button type="button" id="kitRevealBtn" class="btn-couture-hairline px-3.5 py-1.5 text-xs">ซ่อนคำร้อง</button>
             </div>
             <div id="kitLyricCard" class="p-4 border transition-opacity duration-300" style="border-color: var(--tp-border); background-color: var(--tp-bg);">
@@ -1679,7 +2407,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b" style="border-color: rgba(212,180,124,0.3);">
           <div>
             <h2 id="cinemaModalTitle" class="font-display text-xl sm:text-2xl">TENPHASE VILLAIN Official Music Video</h2>
-            <p class="text-xs mt-0.5" style="color: #C5B9AA;">ความยาว 02:25 เผยแพร่พฤศจิกายน 2026</p>
+            <p class="text-xs mt-0.5" style="color: #C5B9AA;">ความยาว 02:25 • เผยแพร่พฤศจิกายน 2026</p>
           </div>
           <div class="flex items-center gap-2">
             <a href="https://youtu.be/o7zS0_cbOlo" target="_blank" rel="noopener noreferrer" class="btn-couture-hairline px-3.5 py-2 text-xs">
@@ -1722,7 +2450,7 @@
     </div>
 
     <!-- 3D Collector Cover Artwork Lightbox & Inspector Modal -->
-    <div id="coverInspectModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-[#070304]/95 backdrop-blur-md overflow-y-auto" role="dialog" aria-modal="true" aria-label="หน้าต่างตรวจชมภาพปกเพลง TΣNPHASE">
+    <div id="coverInspectModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 sm:p-6 bg-[#070304]/95 backdrop-blur-md overflow-y-auto" role="dialog" aria-modal="true" aria-label="หน้าต่างสำรวจภาพปกเพลง TΣNPHASE">
       <div id="coverModalAura" class="fixed inset-0 pointer-events-none transition-all duration-500"></div>
 
       <div class="relative z-10 w-full max-w-[640px] flex flex-col items-center gap-4 my-auto">
@@ -1753,7 +2481,7 @@
               </div>
               <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-xs pointer-events-none">
                 <span class="font-code px-2 py-0.5 bg-[#070304]/80 border" style="border-color: rgba(212,180,124,0.38); color: #D4B47C;">1:1 OFFICIAL JACKET</span>
-                <span id="coverLoupeHint" class="text-xs px-2 py-0.5 bg-[#070304]/80 border hidden" style="border-color: #D4B47C; color: #F0E8DE;">ความละเอียด 2.2×</span>
+                <span id="coverLoupeHint" class="text-xs px-2 py-0.5 bg-[#070304]/80 border hidden" style="border-color: #D4B47C; color: #F0E8DE;">กำลังขยาย 2.2×</span>
               </div>
             </div>
 
@@ -1822,7 +2550,7 @@
           <div id="coverGalleryDots" class="flex items-center justify-center flex-wrap gap-1.5"></div>
           <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
             <button type="button" id="coverPrevBtn" class="btn-couture-hairline px-3 py-1.5 text-xs">ปกก่อนหน้า</button>
-            <span class="font-code text-xs hidden sm:inline" style="color: var(--tp-fg-muted);">คีย์บอร์ด: ซ้าย/ขวา เปลี่ยนปก | F พลิกปก | ESC ปิด</span>
+            <span class="font-code text-xs hidden sm:inline" style="color: var(--tp-fg-muted);">ปุ่มลัด: ซ้าย/ขวา เปลี่ยนปก | F พลิกปก | ESC ปิด</span>
             <div class="flex items-center gap-2">
               <a id="coverModalYtLink" href="https://www.youtube.com/watch?v=HUyhcSgU4nE" target="_blank" rel="noopener noreferrer" class="btn-couture-hairline px-3 py-1.5 text-xs">
                 เปิดบน YouTube Topic
@@ -1930,6 +2658,7 @@
         tabBtnDs.style.backgroundColor = !isMv ? 'var(--tp-accent)' : 'transparent';
         tabBtnDs.style.color = !isMv ? 'var(--tp-accent-fg)' : 'var(--tp-fg-muted)';
         if (isMv) drawForgeCanvas(performance.now());
+        if (window.__tpPanelFx) window.__tpPanelFx(isMv ? panelMv : panelDs);
       }
 
       tabBtnMv.addEventListener('click', function () { setTab('mv'); });
@@ -2000,8 +2729,10 @@
 
       function goToChapter(idx) {
         var clamped = Math.max(0, Math.min(CHAPTERS.length - 1, idx));
+        var prevChapter = activeChapter;
         activeChapter = clamped;
         renderPhaseRail();
+        if (clamped !== prevChapter && window.__tpChapterFx) window.__tpChapterFx(clamped);
         var el = document.getElementById(CHAPTERS[clamped].id);
         if (el) {
           el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
@@ -2016,7 +2747,7 @@
         cinemaSnapEnabled = !cinemaSnapEnabled;
         snapModeToggleBtn.textContent = cinemaSnapEnabled ? 'ล็อกฉาก: เปิด' : 'ล็อกฉาก: อิสระ';
         snapModeToggleBtn.style.color = cinemaSnapEnabled ? 'var(--tp-gold)' : 'var(--tp-fg-muted)';
-        showToast(cinemaSnapEnabled ? 'เปิดการเปลี่ยนฉากตามลูกกลิ้งเมาส์แล้ว' : 'เปลี่ยนเป็นโหมดเลื่อนอิสระแล้ว');
+        showToast(cinemaSnapEnabled ? 'เปิดโหมดเลื่อนทีละฉากแล้ว' : 'เปลี่ยนเป็นโหมดเลื่อนอิสระแล้ว');
       });
 
       // Smart Mouse-Wheel Choreography (respects tall sections & locks gently)
@@ -2115,20 +2846,20 @@
       var isHttpProtocol = window.location.protocol === 'http:' || window.location.protocol === 'https:';
       if (!isHttpProtocol && protocolWarnBanner) {
         protocolWarnBanner.classList.remove('hidden');
-        bgModeLabel.textContent = 'โหมดพื้นหลังฟิล์มสด 60fps (ต้องเปิดผ่าน localhost)';
+        bgModeLabel.textContent = 'โหมดพื้นหลังเอฟเฟกต์ฟิล์ม 60fps (ต้องเปิดผ่าน localhost)';
         syncMode = 'synth';
       }
 
       function updateYtVisuals() {
         var shouldShow = ytBgVisible && ytReady && ytState === 1;
         ytBgMount.style.opacity = shouldShow ? '1' : '0';
-        toggleYtBgBtn.textContent = ytBgVisible ? 'สลับพื้นหลังฟิล์มสด' : 'เล่นวิดีโอ YouTube พื้นหลัง';
-        heroYtBgBtn.textContent = ytBgVisible ? 'สลับพื้นหลังฟิล์มสด' : 'เปิดพื้นหลัง YouTube';
+        toggleYtBgBtn.textContent = ytBgVisible ? 'สลับเป็นพื้นหลังเอฟเฟกต์ฟิล์ม' : 'เล่นวิดีโอพื้นหลัง YouTube';
+        heroYtBgBtn.textContent = ytBgVisible ? 'สลับเป็นพื้นหลังเอฟเฟกต์ฟิล์ม' : 'เปิดวิดีโอพื้นหลัง YouTube';
         if (ytError !== null) {
-          bgModeLabel.textContent = 'YouTube error ' + ytError + ' สลับใช้พื้นหลังฟิล์มสด 60fps';
+          bgModeLabel.textContent = 'YouTube ขัดข้อง (' + ytError + ') สลับใช้พื้นหลังเอฟเฟกต์ฟิล์ม 60fps';
           bgModeDot.style.backgroundColor = '#D4B47C';
         } else if (!ytBgVisible) {
-          bgModeLabel.textContent = 'โหมดพื้นหลังฟิล์มสด 60fps';
+          bgModeLabel.textContent = 'โหมดพื้นหลังเอฟเฟกต์ฟิล์ม 60fps';
           bgModeDot.style.backgroundColor = '#D4B47C';
         } else if (ytReady && ytState === 1) {
           bgModeLabel.textContent = 'กำลังเล่นวิดีโอพื้นหลัง YouTube (VILLAIN)';
@@ -2146,7 +2877,7 @@
           else if (ytMuted) ytPlayer.pauseVideo();
         }
         updateYtVisuals();
-        showToast(ytBgVisible ? 'เปิดวิดีโอพื้นหลัง YouTube แล้ว' : 'สลับสู่โหมดพื้นหลังฟิล์มสดแล้ว');
+        showToast(ytBgVisible ? 'เปิดวิดีโอพื้นหลัง YouTube แล้ว' : 'สลับสู่พื้นหลังเอฟเฟกต์ฟิล์มแล้ว');
       }
 
       toggleYtBgBtn.addEventListener('click', toggleBgLayer);
@@ -2231,7 +2962,7 @@
                   e.target.setVolume(85);
                 } catch (err) {}
                 var pill = document.getElementById('vinylStatusPill');
-                if (pill) pill.textContent = 'พร้อมเล่นเพลงจริงจาก Topic';
+                if (pill) pill.textContent = 'พร้อมเล่นเพลงจริง (Topic)';
               },
               onStateChange: function (e) {
                 turntableYtState = e.data;
@@ -2385,7 +3116,7 @@
         crown: {
           sub: 'The Spectral Crown',
           title: 'ยอดชฎาและม่านขาว',
-          body: 'รูปทรงชฎาเงินและผ้าคลุมขาวด้านบนสุดแทนกรอบความคาดหวังและภาพลักษณ์อันบริสุทธิ์ที่สังคมสวมครอบไว้เหนือตัวตนแท้จริง',
+          body: 'ยอดชฎาเงินและผ้าคลุมขาวเบื้องบน สะท้อนกรอบความคาดหวังและภาพลักษณ์อันบริสุทธิ์ที่สังคมสวมทับไว้เหนือตัวตนที่แท้จริง',
           verse: '"You want a saint with a sinner\'s soul, then act surprised when I lose control."',
           origin: '50% 18%',
           pad: 2
@@ -2393,7 +3124,7 @@
         queen: {
           sub: 'The Blindfolded Villain',
           title: 'เนตรผ้าขาว',
-          body: 'เมื่อดวงตาถูกปิดด้วยผ้าไหมขาว สิ่งที่มองเห็นได้ชัดที่สุดคือแรงปรารถนาและความจริงภายใน สอดคล้องกับท่อนเปิดใจดำทาบเพชรทอง',
+          body: 'เมื่อดวงตาถูกปิดด้วยผ้าไหมขาว สิ่งที่แจ่มชัดที่สุดกลับเป็นแรงปรารถนาและความจริงภายใน ดั่งท่อนเปิดใจดำทาบเพชรทอง',
           verse: '"I got a black heart painted in gold, a pretty little nightmare that never gets old."',
           origin: '50% 42%',
           pad: 4
@@ -2401,7 +3132,7 @@
         sentinels: {
           sub: 'Twin Obsidian Sentinels',
           title: 'องครักษ์อนธการ',
-          body: 'เงาดำไร้ใบหน้าสองฝั่งทำหน้าที่เสมือนผู้พิทักษ์สมมาตร ระหว่างรากเหง้าศิลปะไทยโบราณกับพลังกบฏของซาวด์แทรปเมทัล',
+          body: 'เงาดำไร้ใบหน้าทั้งสองฝั่งยืนหยัดเป็นดั่งผู้พิทักษ์สมมาตร เชื่อมโยงรากเหง้าศิลปะไทยโบราณเข้ากับพลังขบถของซาวด์แทรปเมทัล',
           verse: '"Cut the cord, kill the noise, I was never one of your toys."',
           origin: '25% 48%',
           pad: 1
@@ -2409,7 +3140,7 @@
         scepter: {
           sub: 'Scepter of Ten Faces',
           title: 'คทาสิบพักตร์',
-          body: 'คทาเงินสลักลวดลายที่จรดลงกลางแท่นบูชา เป็นจุดประกาศเอกราชของแบรนด์ TENPHASE ที่เปลี่ยนคำตราหน้าให้กลายเป็นอาณาจักร',
+          body: 'คทาเงินสลักลวดลายที่จรดลงกลางแท่นบูชา คือหมุดหมายประกาศเอกราชของ TENPHASE ที่แปรเปลี่ยนคำตราหน้าให้กลายเป็นอาณาจักร',
           verse: '"You gave me a name, I gave it a meaning. You called me a villain, I made it my kingdom."',
           origin: '50% 76%',
           pad: 2
@@ -2898,18 +3629,18 @@
       function updateTransportUI() {
         if (syncMode === 'youtube' && ytReady) {
           transportToggleBtn.textContent = ytState === 1 ? 'หยุด MV' : 'เล่น MV';
-          synthBadge.textContent = ytState === 1 ? 'ซิงก์ YouTube MV จริง' : 'หยุดชั่วคราว';
+          synthBadge.textContent = ytState === 1 ? 'ซิงก์ YouTube MV ต้นฉบับ' : 'หยุดชั่วคราว';
         } else {
-          transportToggleBtn.textContent = studioPlaying ? 'หยุดซินธ์' : 'เล่นสตูดิโอเสียง';
+          transportToggleBtn.textContent = studioPlaying ? 'หยุดซินธ์' : 'เล่นซินธ์สตูดิโอ';
           synthBadge.textContent = studioPlaying ? 'โหมด 4-Stem กำลังเล่น' : 'โหมด 4-Stem พร้อมใช้';
         }
       }
 
       function updateSyncControlsUI() {
-        syncModeBtn.textContent = syncMode === 'youtube' ? 'ซิงก์กับ YouTube MV จริง' : 'โหมดสตูดิโอซินธ์สด (4-Stem)';
+        syncModeBtn.textContent = syncMode === 'youtube' ? 'ซิงก์กับ YouTube MV ต้นฉบับ' : 'โหมดสตูดิโอซินธ์สด (4-Stem)';
         heroSoundToggleLabel.textContent = (syncMode === 'youtube' && ytReady)
-          ? (ytMuted ? 'เปิดเสียง MV จริง' : 'ปิดเสียง MV')
-          : (studioPlaying ? 'หยุดสตูดิโอเสียง' : 'เปิดสตูดิโอเสียง');
+          ? (ytMuted ? 'เปิดเสียง MV ต้นฉบับ' : 'ปิดเสียง MV')
+          : (studioPlaying ? 'หยุดซินธ์สตูดิโอ' : 'เปิดซินธ์สตูดิโอ');
         updateTransportUI();
       }
 
@@ -2924,7 +3655,7 @@
             ytPlayer.setVolume(Math.round(volLevel * 100));
             ytPlayer.playVideo();
             ytMuted = false;
-            showToast('เปิดเสียงมิวสิกวิดีโอ VILLAIN จริงแล้ว');
+            showToast('เปิดเสียงมิวสิกวิดีโอ VILLAIN แล้ว');
           } else {
             ytPlayer.mute();
             ytMuted = true;
@@ -2952,7 +3683,7 @@
           ytPlayer.playVideo();
           updateYtVisuals();
           updateSyncControlsUI();
-          showToast('ซิงก์กับ YouTube MV จริงแล้ว');
+          showToast('ซิงก์กับ YouTube MV ต้นฉบับแล้ว');
         }
       });
 
@@ -3259,7 +3990,7 @@
           accent: '#A90C12',
           glow: 'rgba(169, 12, 18, 0.26)',
           labelColor: '#6E0408',
-          desc: 'ซิงเกิลล่าสุดในระบบสีชาดและทองทาบใจดำ ว่าด้วยการเปลี่ยนคำตราหน้าให้กลายเป็นอาณาจักรของตนเอง จากช่อง TΣNPHASE Topic',
+          desc: 'ซิงเกิลล่าสุดในโทนสีชาดและทองทาบใจดำ ว่าด้วยการแปรเปลี่ยนคำตราหน้าให้กลายเป็นอาณาจักรของตนเอง จากช่อง TΣNPHASE Topic',
           motif: { notes: [110, 164.8, 220, 880], type: 'sawtooth', tempo: 150 }
         },
         {
@@ -3274,7 +4005,7 @@
           accent: '#C5B9AA',
           glow: 'rgba(197, 185, 170, 0.2)',
           labelColor: '#3A2E2B',
-          desc: 'เวอร์ชันอะคูสติกที่ถอดเกราะดนตรีอิเล็กทรอนิกส์ออก เหลือความเปราะบางของเสียงร้องและคอร์ดโปร่งลึกซึ้ง',
+          desc: 'เวอร์ชันอะคูสติกที่ถอดเกราะดนตรีอิเล็กทรอนิกส์ออก เผยความเปราะบางของเสียงร้องและคอร์ดโปร่งอย่างลึกซึ้ง',
           motif: { notes: [146.8, 220, 293.7, 587.3], type: 'triangle', tempo: 210 }
         },
         {
@@ -3304,7 +4035,7 @@
           accent: '#8C9BA5',
           glow: 'rgba(140, 155, 165, 0.2)',
           labelColor: '#25323B',
-          desc: 'เสียงร้องเรียกร้องพื้นที่หายใจท่ามกลางแรงกดดัน ถ่ายทอดผ่านซาวด์ดีไซน์ที่ค่อย ๆ ไต่ระดับความเข้มข้น',
+          desc: 'เสียงร้องที่โหยหาพื้นที่หายใจท่ามกลางแรงกดดัน ถ่ายทอดผ่านซาวด์ดีไซน์ที่ค่อย ๆ ไต่ระดับความเข้มข้น',
           motif: { notes: [123.5, 185, 246.9, 659.2], type: 'triangle', tempo: 180 }
         },
         {
@@ -3319,7 +4050,7 @@
           accent: '#B58E5A',
           glow: 'rgba(181, 142, 90, 0.2)',
           labelColor: '#42311D',
-          desc: 'ความทรงจำที่หยุดนิ่งอยู่ในคืนวันพฤหัสบดี คุมจังหวะเนิบช้าและบรรยากาศฟิล์มยามค่ำคืน',
+          desc: 'ความทรงจำที่หยุดนิ่งอยู่ในคืนวันพฤหัสบดี โอบล้อมด้วยจังหวะเนิบช้าและบรรยากาศฟิล์มยามค่ำคืน',
           motif: { notes: [110, 164.8, 246.9, 659.2], type: 'sine', tempo: 200 }
         },
         {
@@ -3364,7 +4095,7 @@
           accent: '#C5B9AA',
           glow: 'rgba(197, 185, 170, 0.2)',
           labelColor: '#3D3435',
-          desc: 'นำตำนานกินรีมาตีความใหม่ยาวกว่า 5 นาที ผสานเสียงเครื่องดนตรีไทยกับอิเล็กทรอนิกส์ลึกลับ',
+          desc: 'นำตำนานกินรีมาตีความใหม่ตลอดความยาวกว่า 5 นาที ผสานเสียงเครื่องดนตรีไทยเข้ากับซาวด์อิเล็กทรอนิกส์อันลึกลับ',
           motif: { notes: [196, 293.7, 440, 1046.5], type: 'triangle', tempo: 140 }
         },
         {
@@ -3379,7 +4110,7 @@
           accent: '#D89B4C',
           glow: 'rgba(216, 155, 76, 0.22)',
           labelColor: '#4B3412',
-          desc: 'แสงริบหรี่ในความมืดอนธการ สะท้อนความเปราะบางของความทรงจำด้วยซาวด์โปร่งและเบสลึก',
+          desc: 'แสงริบหรี่ในห้วงอนธการ สะท้อนความเปราะบางของความทรงจำผ่านซาวด์โปร่งและเบสลุ่มลึก',
           motif: { notes: [220, 329.6, 523.2, 987.7], type: 'sine', tempo: 210 }
         },
         {
@@ -3394,7 +4125,7 @@
           accent: '#9E3845',
           glow: 'rgba(158, 56, 69, 0.24)',
           labelColor: '#5B1A26',
-          desc: 'เรียบเรียงงานวรรณศิลป์ไทยใหม่ในมิติที่เยือกเย็นและหรูหรา เชื่อมต่อความงดงามแบบดั้งเดิมกับเบส 808',
+          desc: 'เรียบเรียงงานวรรณศิลป์ไทยใหม่ในมิติที่เยือกเย็นและหรูหรา หลอมรวมความงดงามแบบดั้งเดิมเข้ากับเบส 808',
           motif: { notes: [146.8, 220, 293.7, 659.2], type: 'triangle', tempo: 185 }
         },
         {
@@ -4055,11 +4786,11 @@
       // 8. DESIGN SYSTEM VIEW
       // ------------------------------------------------------------------
       var DS_COLORS = [
-        { nameTh: 'นิลลงรัก', cssVar: '--tp-abyss', hex: '#070304', role: 'พื้นหลังลึกที่สุดของฉากภาพยนตร์' },
+        { nameTh: 'นิลลงรัก', cssVar: '--tp-abyss', hex: '#070304', role: 'พื้นหลังที่ลุ่มลึกที่สุดของฉากภาพยนตร์' },
         { nameTh: 'ชาดเข้มวิหาร', cssVar: '--tp-oxblood', hex: '#160406', role: 'พื้นผิวแผงข้อมูลและเวทีคำร้อง' },
         { nameTh: 'แดงชาดราชัน', cssVar: '--tp-crimson', hex: '#6E0408', role: 'สีสตูดิโอหลักประจำแบรนด์ TENPHASE' },
         { nameTh: 'โลหิตซินนาบาร์', cssVar: '--tp-venom', hex: '#A90C12', role: 'ปุ่มพิธีกรรมและแสงเฉือนตามจังหวะเพลง' },
-        { nameTh: 'ทองทาบใจดำ', cssVar: '--tp-gold', hex: '#D4B47C', role: 'จากเนื้อร้อง Painted in Gold ใช้เน้นจุดหรูหรา' },
+        { nameTh: 'ทองทาบใจดำ', cssVar: '--tp-gold', hex: '#D4B47C', role: 'ใช้ขับเน้นรายละเอียดหรูหรา จากท่อนร้อง Painted in Gold' },
         { nameTh: 'เงินรมดำชฎา', cssVar: '--tp-silver', hex: '#C5B9AA', role: 'เส้นขอบโลหะ ลายชฎา และข้อความรอง' },
         { nameTh: 'ไหมขาวปิดตา', cssVar: '--tp-ivory', hex: '#F0E8DE', role: 'ตัวอักษรหลักและม่านไหมโปร่งแสง' }
       ];
@@ -4107,7 +4838,7 @@
         '<div class="p-4 space-y-1">' +
           '<div class="flex items-baseline justify-between gap-2"><span class="font-display text-base" style="color: var(--tp-fg);">แสงปริซึมขอบเลนส์</span><span class="font-code text-xs" style="color: var(--tp-gold);">Spectral</span></div>' +
           '<div class="font-code text-xs" style="color: var(--tp-fg-muted);">--ctrl-prism</div>' +
-          '<p class="text-xs pt-1" style="color: var(--tp-fg-muted);">แสงหักเหฟ้า-ส้ม-แดงมุมซ้ายบนและขวาล่างของภาพ</p>' +
+          '<p class="text-xs pt-1" style="color: var(--tp-fg-muted);">แสงหักเหโทนฟ้า-ส้ม-แดง บริเวณมุมซ้ายบนและขวาล่างของภาพ</p>' +
         '</div>';
       dsColorGrid.appendChild(prismSwatch);
 
@@ -4313,6 +5044,684 @@
       setExportTab('css');
       drawForgeCanvas(0);
       requestAnimationFrame(masterLoop);
+    })();
+  </script>
+  <script>
+    (function () {
+      'use strict';
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var ROMAN = ['I', 'II', 'III', 'IV', 'V'];
+      var LABELS = ['เวทีภาพยนตร์', 'แท่นบูชา 3 มิติ', 'Sound Forge', 'คลังแผ่นเสียง', 'เครดิตและพรีเซฟ'];
+      var IDS = ['chapHero', 'chapAltar', 'chapForge', 'chapArchive', 'chapCredits'];
+
+      // Chapter curtain wipe
+      var curtain = document.getElementById('chapterCurtain');
+      window.__tpChapterFx = function (idx) {
+        if (reduce || !curtain) return;
+        curtain.querySelector('.cc-roman').textContent = ROMAN[idx] || '';
+        curtain.querySelector('.cc-label').textContent = (LABELS[idx] || '').toUpperCase();
+        curtain.classList.remove('is-running');
+        void curtain.offsetWidth;
+        curtain.classList.add('is-running');
+        var hud = document.getElementById('hudChapterText');
+        if (hud) { hud.classList.remove('hud-swap'); void hud.offsetWidth; hud.classList.add('hud-swap'); }
+      };
+      if (curtain) curtain.addEventListener('animationend', function (e) {
+        if (e.target === curtain) curtain.classList.remove('is-running');
+      });
+
+      // Tab panel transition
+      window.__tpPanelFx = function (panel) {
+        if (reduce || !panel) return;
+        panel.classList.remove('panel-enter');
+        void panel.offsetWidth;
+        panel.classList.add('panel-enter');
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        setTimeout(function () { panel.classList.remove('panel-enter'); }, 800);
+      };
+
+      // Hero intro stagger
+      document.querySelectorAll('#chapHero > .z-20').forEach(function (el, i) {
+        el.style.setProperty('--hi-delay', (150 + i * 160) + 'ms');
+        if (!reduce) el.classList.add('hero-intro');
+      });
+      var heroTitleBlock = (function () { var n = document.querySelectorAll('#chapHero > .z-20'); return n[n.length - 1]; })();
+
+      // Scroll reveals
+      var targets = [];
+      function collect(section, container) {
+        var kids = Array.prototype.slice.call(container.children);
+        kids.forEach(function (el, i) {
+          if (el.tagName === 'SCRIPT' || el.classList.contains('chapter-sweep')) return;
+          el.classList.add('tp-reveal');
+          if (i > 0 && kids.length > 1) el.classList.add(i % 2 ? 'rv-left' : 'rv-right');
+          if (i === 0) el.classList.remove('rv-left', 'rv-right');
+          el.style.setProperty('--rv-delay', Math.min(i, 5) * 110 + 'ms');
+          targets.push(el);
+        });
+      }
+      IDS.slice(1).forEach(function (id) {
+        var sec = document.getElementById(id);
+        if (!sec) return;
+        var wrap = sec.querySelector(':scope > div');
+        collect(sec, wrap || sec);
+      });
+      document.querySelectorAll('#panelDs > section').forEach(function (sec) { collect(sec, sec); });
+
+      // Gold sweep line on chapter top
+      IDS.forEach(function (id) {
+        var sec = document.getElementById(id);
+        if (!sec) return;
+        if (getComputedStyle(sec).position === 'static') sec.style.position = 'relative';
+        var line = document.createElement('div');
+        line.className = 'chapter-sweep';
+        sec.insertBefore(line, sec.firstChild);
+      });
+
+      function reveal(el) {
+        el.classList.add('is-in');
+        setTimeout(function () {
+          el.classList.remove('tp-reveal', 'rv-left', 'rv-right', 'is-in');
+          el.style.removeProperty('--rv-delay');
+        }, 1900);
+      }
+      if ('IntersectionObserver' in window && !reduce) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+        targets.forEach(function (el) { io.observe(el); });
+
+        var so = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            e.target.classList.toggle('chapter-live', e.isIntersecting && e.intersectionRatio > 0.3);
+          });
+        }, { threshold: [0, 0.3, 0.6] });
+        IDS.forEach(function (id) { var s = document.getElementById(id); if (s) so.observe(s); });
+      } else {
+        targets.forEach(reveal);
+      }
+
+      // Hero parallax fade on scroll
+      if (!reduce && heroTitleBlock) {
+        var ticking = false;
+        window.addEventListener('scroll', function () {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(function () {
+            var y = Math.min(window.scrollY, window.innerHeight);
+            var p = y / window.innerHeight;
+            heroTitleBlock.style.translate = '0 ' + (y * 0.22).toFixed(1) + 'px';
+            heroTitleBlock.style.opacity = String(Math.max(0, 1 - p * 1.15));
+            ticking = false;
+          });
+        }, { passive: true });
+      }
+    })();
+  </script>
+
+  <script>
+    /* ===== Interactive Micro-FX Layer ===== */
+    // --- Buttons & Clicks ---
+    (function () {
+(function () {
+  'use strict';
+  if (window.__tpBtnFxInit) return;
+  window.__tpBtnFxInit = true;
+
+  var TARGET_SELECTOR = '.btn-couture-primary, .btn-couture-hairline, .btn-couture-glass, .mood-btn, .hotspot-tab, #tabBtnMv, #tabBtnDs, #snapModeToggleBtn';
+  var MAG_SELECTOR = '.btn-couture-primary, .btn-couture-glass';
+
+  var reducedMotionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  var finePointerQuery = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)') : null;
+
+  function isReducedMotion() {
+    return !!(reducedMotionQuery && reducedMotionQuery.matches);
+  }
+
+  function isDesktopPointer() {
+    return !!(finePointerQuery && finePointerQuery.matches);
+  }
+
+  function isDisabledControl(el) {
+    if (!el) return true;
+    if (el.disabled === true) return true;
+    if (el.getAttribute && el.getAttribute('aria-disabled') === 'true') return true;
+    if (el.matches && el.matches(':disabled')) return true;
+    return false;
+  }
+
+  function getClosest(target, selector) {
+    if (!target || !target.closest) return null;
+    return target.closest(selector);
+  }
+
+  var activeMagBtn = null;
+
+  function resetMag(btn) {
+    if (!btn) return;
+    btn.style.removeProperty('--mag-x');
+    btn.style.removeProperty('--mag-y');
+    if (activeMagBtn === btn) activeMagBtn = null;
+  }
+
+  if (reducedMotionQuery && reducedMotionQuery.addEventListener) {
+    reducedMotionQuery.addEventListener('change', function () {
+      if (isReducedMotion() && activeMagBtn) resetMag(activeMagBtn);
+    });
+  }
+
+  document.addEventListener('mousemove', function (e) {
+    if (isReducedMotion() || !isDesktopPointer()) {
+      if (activeMagBtn) resetMag(activeMagBtn);
+      return;
+    }
+
+    var btn = getClosest(e.target, MAG_SELECTOR);
+    if (activeMagBtn && activeMagBtn !== btn) {
+      resetMag(activeMagBtn);
+    }
+    if (!btn || isDisabledControl(btn)) {
+      if (btn) resetMag(btn);
+      return;
+    }
+
+    var rect = btn.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    var relX = ((e.clientX - rect.left) / rect.width) - 0.5;
+    var relY = ((e.clientY - rect.top) / rect.height) - 0.5;
+    var maxPull = 4;
+    var magX = Math.max(-maxPull, Math.min(maxPull, relX * 2 * maxPull));
+    var magY = Math.max(-maxPull, Math.min(maxPull, relY * 2 * maxPull));
+
+    btn.style.setProperty('--mag-x', magX.toFixed(2) + 'px');
+    btn.style.setProperty('--mag-y', magY.toFixed(2) + 'px');
+    activeMagBtn = btn;
+  }, { passive: true });
+
+  document.addEventListener('mouseout', function (e) {
+    var btn = getClosest(e.target, MAG_SELECTOR);
+    if (!btn) return;
+    if (!e.relatedTarget || !btn.contains(e.relatedTarget)) {
+      resetMag(btn);
+    }
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', function () {
+    if (activeMagBtn) resetMag(activeMagBtn);
+  });
+
+  window.addEventListener('blur', function () {
+    if (activeMagBtn) resetMag(activeMagBtn);
+  });
+
+  function spawnRipple(btn, clientX, clientY) {
+    var rect = btn.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    var hasCoords = (typeof clientX === 'number' && typeof clientY === 'number' && (clientX !== 0 || clientY !== 0));
+    var x = hasCoords ? (clientX - rect.left) : (rect.width / 2);
+    var y = hasCoords ? (clientY - rect.top) : (rect.height / 2);
+
+    var dx = Math.max(x, rect.width - x);
+    var dy = Math.max(y, rect.height - y);
+    var size = Math.max(48, Math.ceil(Math.hypot(dx, dy) * 2));
+
+    var existing = btn.querySelectorAll('.tp-btn-ripple');
+    if (existing.length >= 4 && existing[0].parentNode) {
+      existing[0].parentNode.removeChild(existing[0]);
+    }
+
+    var ripple = document.createElement('span');
+    ripple.className = 'tp-btn-ripple';
+    ripple.setAttribute('aria-hidden', 'true');
+    ripple.style.width = size + 'px';
+    ripple.style.height = size + 'px';
+    ripple.style.left = (x - size / 2) + 'px';
+    ripple.style.top = (y - size / 2) + 'px';
+
+    btn.appendChild(ripple);
+
+    var cleaned = false;
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+    }
+
+    ripple.addEventListener('animationend', cleanup, { once: true });
+    setTimeout(cleanup, 650);
+  }
+
+  function spawnSparks(btn, clientX, clientY) {
+    if (!document.body) return;
+    var rect = btn.getBoundingClientRect();
+    var hasCoords = (typeof clientX === 'number' && typeof clientY === 'number' && (clientX !== 0 || clientY !== 0));
+    var cx = hasCoords ? clientX : (rect.left + rect.width / 2);
+    var cy = hasCoords ? clientY : (rect.top + rect.height / 2);
+
+    var overlay = document.createElement('div');
+    overlay.className = 'tp-spark-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+
+    var baseAngles = [-135, -45, 45, 135];
+    for (var i = 0; i < 4; i++) {
+      var ember = document.createElement('span');
+      ember.className = 'tp-spark-ember';
+      var angle = (baseAngles[i] + (Math.random() * 20 - 10)) * (Math.PI / 180);
+      var dist = 18 + Math.random() * 12;
+      var tx = Math.cos(angle) * dist;
+      var ty = Math.sin(angle) * dist;
+
+      ember.style.left = cx + 'px';
+      ember.style.top = cy + 'px';
+      ember.style.setProperty('--spark-x', tx.toFixed(1) + 'px');
+      ember.style.setProperty('--spark-y', ty.toFixed(1) + 'px');
+      overlay.appendChild(ember);
+    }
+
+    document.body.appendChild(overlay);
+    setTimeout(function () {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    }, 520);
+  }
+
+  document.addEventListener('click', function (e) {
+    if (isReducedMotion()) return;
+    var btn = getClosest(e.target, TARGET_SELECTOR);
+    if (!btn || isDisabledControl(btn)) return;
+
+    spawnRipple(btn, e.clientX, e.clientY);
+    spawnSparks(btn, e.clientX, e.clientY);
+  });
+})();
+    })();
+
+    // --- Modals, Mood & Toast ---
+    (function () {
+(function () {
+  'use strict';
+
+  var motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function isReducedMotion() {
+    return Boolean(motionQuery && motionQuery.matches);
+  }
+
+  function triggerMoodWash(btn) {
+    if (isReducedMotion() || !btn || !document.body) return;
+    var rect = btn.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var maxR = Math.hypot(Math.max(cx, window.innerWidth - cx), Math.max(cy, window.innerHeight - cy));
+    var diameter = Math.ceil(maxR * 2);
+    var mood = btn.getAttribute('data-mood') || 'sovereign';
+    if (mood !== 'sovereign' && mood !== 'gilded' && mood !== 'ivory') {
+      mood = 'sovereign';
+    }
+
+    var wash = document.createElement('div');
+    wash.className = 'tp-mood-wash tp-mood-wash--' + mood;
+    wash.setAttribute('aria-hidden', 'true');
+    wash.style.left = cx + 'px';
+    wash.style.top = cy + 'px';
+    wash.style.width = diameter + 'px';
+    wash.style.height = diameter + 'px';
+    document.body.appendChild(wash);
+
+    window.setTimeout(function () {
+      if (wash.parentNode) {
+        wash.parentNode.removeChild(wash);
+      }
+    }, 680);
+  }
+
+  function observeModals() {
+    var modalIds = ['cinemaModal', 'quoteCardModal', 'coverInspectModal'];
+    modalIds.forEach(function (id) {
+      var modal = document.getElementById(id);
+      if (!modal) return;
+
+      var wasHidden = modal.classList.contains('hidden');
+      var cleanupTimer = null;
+
+      var observer = new MutationObserver(function () {
+        var isHidden = modal.classList.contains('hidden');
+        if (wasHidden && !isHidden) {
+          window.clearTimeout(cleanupTimer);
+          modal.classList.remove('tp-modal-enter');
+          if (!isReducedMotion()) {
+            void modal.offsetWidth;
+            modal.classList.add('tp-modal-enter');
+            cleanupTimer = window.setTimeout(function () {
+              modal.classList.remove('tp-modal-enter');
+            }, 460);
+          }
+        } else if (!wasHidden && isHidden) {
+          window.clearTimeout(cleanupTimer);
+          modal.classList.remove('tp-modal-enter');
+        }
+        wasHidden = isHidden;
+      });
+
+      observer.observe(modal, {
+        attributes: true,
+        attributeFilter: ['class']
+      });
+    });
+  }
+
+  function observeToast() {
+    var toastEl = document.getElementById('tpToast');
+    if (!toastEl) return;
+
+    var lastText = toastEl.textContent || '';
+    var lastOpacity = toastEl.style.opacity || '';
+
+    function restartToastFx() {
+      toastEl.classList.remove('tp-toast-exit');
+      toastEl.classList.remove('tp-toast-active');
+      if (!isReducedMotion()) {
+        void toastEl.offsetWidth;
+      }
+      toastEl.classList.add('tp-toast-active');
+    }
+
+    var observer = new MutationObserver(function (mutations) {
+      var currentText = toastEl.textContent || '';
+      var currentOpacity = toastEl.style.opacity || '';
+      var textChanged = currentText !== lastText;
+      var opacityChanged = currentOpacity !== lastOpacity;
+      var hasChildMutation = mutations.some(function (m) {
+        return m.type === 'childList' || m.type === 'characterData';
+      });
+
+      lastText = currentText;
+      lastOpacity = currentOpacity;
+
+      if (currentOpacity === '1') {
+        if (opacityChanged || textChanged || hasChildMutation) {
+          restartToastFx();
+        }
+      } else if (currentOpacity === '0') {
+        toastEl.classList.remove('tp-toast-active');
+        if (!isReducedMotion()) {
+          toastEl.classList.add('tp-toast-exit');
+        } else {
+          toastEl.classList.remove('tp-toast-exit');
+        }
+      }
+    });
+
+    observer.observe(toastEl, {
+      attributes: true,
+      attributeFilter: ['style'],
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+
+  function init() {
+    if (window.__tpFx2OverlaysInit) return;
+    window.__tpFx2OverlaysInit = true;
+
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (!target || typeof target.closest !== 'function') return;
+      var moodBtn = target.closest('.mood-btn');
+      if (moodBtn) {
+        triggerMoodWash(moodBtn);
+      }
+    });
+
+    observeModals();
+    observeToast();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+    })();
+
+    // --- Forge, Altar & Vinyl ---
+    (function () {
+(function () {
+  'use strict';
+  if (window.__tpStageFxInit) return;
+  window.__tpStageFxInit = true;
+
+  var motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function isReducedMotion() {
+    return Boolean(motionQuery && motionQuery.matches);
+  }
+
+  function pulseClass(el, cls, ms) {
+    if (!el) return;
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+    window.setTimeout(function () {
+      el.classList.remove(cls);
+    }, ms);
+  }
+
+  /* 1. Forge Pad Shockwave + Recoil on click and keys 1-4 */
+  function triggerPadFxVisual(padEl, clientX, clientY) {
+    if (!padEl) return;
+    pulseClass(padEl, 'tp-pad-recoil', 290);
+    if (isReducedMotion()) return;
+
+    var shock = document.createElement('span');
+    shock.className = 'tp-pad-shock';
+    shock.setAttribute('aria-hidden', 'true');
+    if (typeof clientX === 'number' && typeof clientY === 'number' && clientX > 0 && clientY > 0) {
+      var rect = padEl.getBoundingClientRect();
+      shock.style.left = (clientX - rect.left) + 'px';
+      shock.style.top = (clientY - rect.top) + 'px';
+    } else {
+      shock.style.left = '50%';
+      shock.style.top = '50%';
+    }
+    padEl.appendChild(shock);
+    window.setTimeout(function () {
+      if (shock.parentNode) shock.parentNode.removeChild(shock);
+    }, 560);
+  }
+
+  /* 2. Dual Gilded Concentric Hotspot Pulse Rings (separate nodes in #altarShockHost) */
+  function spawnHotspotRings(pinEl) {
+    if (!pinEl) return;
+    pulseClass(pinEl, 'tp-pin-triggered', 360);
+    if (isReducedMotion()) return;
+
+    var host = document.getElementById('altarShockHost') || pinEl.parentNode;
+    if (!host) return;
+    var left = pinEl.style.left || '50%';
+    var top = pinEl.style.top || '50%';
+
+    var outer = document.createElement('span');
+    outer.className = 'tp-hotspot-pulse-outer';
+    outer.setAttribute('aria-hidden', 'true');
+    outer.style.left = left;
+    outer.style.top = top;
+
+    var inner = document.createElement('span');
+    inner.className = 'tp-hotspot-pulse-inner';
+    inner.setAttribute('aria-hidden', 'true');
+    inner.style.left = left;
+    inner.style.top = top;
+
+    host.appendChild(outer);
+    host.appendChild(inner);
+    window.setTimeout(function () {
+      if (outer.parentNode) outer.parentNode.removeChild(outer);
+      if (inner.parentNode) inner.parentNode.removeChild(inner);
+    }, 840);
+  }
+
+  /* Observe #loreTitle text changes for staggered fade-slide re-entry */
+  var loreTitleEl = document.getElementById('loreTitle');
+  var lastLoreTitle = loreTitleEl ? loreTitleEl.textContent : '';
+  function replayLoreEntrance() {
+    if (isReducedMotion()) return;
+    var ids = ['loreSubtitle', 'loreTitle', 'loreBody', 'loreVerse'];
+    for (var i = 0; i < ids.length; i++) {
+      var node = document.getElementById(ids[i]);
+      if (node) pulseClass(node, 'tp-lore-enter', 560);
+    }
+  }
+  if (loreTitleEl && window.MutationObserver) {
+    var loreObserver = new MutationObserver(function () {
+      var current = loreTitleEl.textContent;
+      if (current !== lastLoreTitle) {
+        lastLoreTitle = current;
+        replayLoreEntrance();
+      }
+    });
+    loreObserver.observe(loreTitleEl, { childList: true, characterData: true, subtree: true });
+  }
+
+  /* 3. Dynamic re-render glint persistence for .crate-card and #forgeLyricsList button */
+  var pendingCrateIdx = -1;
+  var pendingLyricText = '';
+
+  var crateStripEl = document.getElementById('recordCrateStrip');
+  if (crateStripEl && window.MutationObserver) {
+    var crateObserver = new MutationObserver(function () {
+      if (pendingCrateIdx < 0) return;
+      var cards = crateStripEl.querySelectorAll('.crate-card');
+      var target = cards[pendingCrateIdx] || crateStripEl.querySelector('.crate-card.is-active');
+      pendingCrateIdx = -1;
+      if (target) pulseClass(target, 'tp-crate-clicked', 650);
+    });
+    crateObserver.observe(crateStripEl, { childList: true });
+  }
+
+  var lyricsListEl = document.getElementById('forgeLyricsList');
+  if (lyricsListEl && window.MutationObserver) {
+    var lyricsObserver = new MutationObserver(function () {
+      if (!pendingLyricText) return;
+      var btns = lyricsListEl.querySelectorAll('button');
+      var target = null;
+      for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent === pendingLyricText) {
+          target = btns[i];
+          break;
+        }
+      }
+      pendingLyricText = '';
+      if (target) pulseClass(target, 'tp-lyric-glint', 620);
+    });
+    lyricsObserver.observe(lyricsListEl, { childList: true });
+  }
+
+  /* Delegated click interactions */
+  document.addEventListener('click', function (e) {
+    var target = e.target;
+    if (!target || !target.closest) return;
+
+    var pad = target.closest('.forge-pad');
+    if (pad) {
+      triggerPadFxVisual(pad, e.clientX, e.clientY);
+      return;
+    }
+
+    var pin = target.closest('.hotspot-pin');
+    if (pin) {
+      spawnHotspotRings(pin);
+      return;
+    }
+
+    var tab = target.closest('.hotspot-tab');
+    if (tab) {
+      var key = tab.getAttribute('data-hotspot-tab');
+      if (key) {
+        var matchingPin = document.querySelector('.hotspot-pin[data-hotspot="' + key + '"]');
+        if (matchingPin) spawnHotspotRings(matchingPin);
+      }
+      return;
+    }
+
+    var crateCard = target.closest('.crate-card');
+    if (crateCard && crateStripEl) {
+      var allCards = crateStripEl.querySelectorAll('.crate-card');
+      pendingCrateIdx = Array.prototype.indexOf.call(allCards, crateCard);
+      pulseClass(crateCard, 'tp-crate-clicked', 650);
+      return;
+    }
+
+    var lyricBtn = target.closest('#forgeLyricsList button');
+    if (lyricBtn) {
+      pendingLyricText = lyricBtn.textContent || '';
+      pulseClass(lyricBtn, 'tp-lyric-glint', 620);
+      return;
+    }
+
+    var vinylNav = target.closest('#prevVinylBtn, #nextVinylBtn');
+    if (vinylNav) {
+      pulseClass(vinylNav, 'tp-vinyl-nav-hit', 260);
+    }
+  });
+
+  /* Keyboard 1-4 trigger for .forge-pad outside inputs/textareas */
+  window.addEventListener('keydown', function (e) {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    var active = document.activeElement;
+    var tag = active ? active.tagName : '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (active && active.isContentEditable)) return;
+    if (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') {
+      var pad = document.querySelector('.forge-pad[data-pad="' + e.key + '"]');
+      if (pad) triggerPadFxVisual(pad);
+    }
+  });
+
+  /* 4. Active-drag crimson-gold glow state (.is-dragging) on .tp-range */
+  var activeRange = null;
+  var rangeIdleTimer = null;
+
+  function setDraggingRange(el) {
+    if (activeRange && activeRange !== el) {
+      activeRange.classList.remove('is-dragging');
+    }
+    activeRange = el;
+    if (activeRange) activeRange.classList.add('is-dragging');
+  }
+
+  function clearDraggingRange() {
+    if (rangeIdleTimer) {
+      window.clearTimeout(rangeIdleTimer);
+      rangeIdleTimer = null;
+    }
+    if (activeRange) {
+      activeRange.classList.remove('is-dragging');
+      activeRange = null;
+    }
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    var range = e.target && e.target.closest ? e.target.closest('.tp-range') : null;
+    if (!range) return;
+    if (rangeIdleTimer) window.clearTimeout(rangeIdleTimer);
+    setDraggingRange(range);
+  });
+
+  document.addEventListener('input', function (e) {
+    var range = e.target && e.target.closest ? e.target.closest('.tp-range') : null;
+    if (!range) return;
+    setDraggingRange(range);
+    if (rangeIdleTimer) window.clearTimeout(rangeIdleTimer);
+    rangeIdleTimer = window.setTimeout(clearDraggingRange, 260);
+  });
+
+  window.addEventListener('pointerup', clearDraggingRange);
+  window.addEventListener('pointercancel', clearDraggingRange);
+  window.addEventListener('blur', clearDraggingRange);
+})();
     })();
   </script>
 </body>
